@@ -28,8 +28,9 @@ const { s, c } = bootstrapStyleSheet;
 export default function App() {
   // data
   const [unit, setUnit] = useState("C");
-  const [q, setQ] = useState("Berhampore,Murshidabad,Westbangal");
+  const [q, setQ] = useState("Berhampore,Murshidabad");
   const [data, setData] = useState(null);
+  const [isEdit, setIsEdit] = useState(false);
   const testData = {
     coord: { lon: 88.2667, lat: 24.1833 },
     weather: [
@@ -87,10 +88,10 @@ export default function App() {
     return atm.toFixed(1);
   };
 
-  const Refresh=()=>{
+  const Refresh = () => {
     setData(null);
     CALL_API();
-  }
+  };
 
   const API_KEY = "ff05f8c09dfd8d8f97450980f607a648";
   const API_URI = `http://api.openweathermap.org/data/2.5/weather?q=${q}&appid=${API_KEY}`;
@@ -105,7 +106,7 @@ export default function App() {
   const NoDataFound = () => {
     return (
       <View style={[s.row]}>
-        <View style={[s.col]}>
+        <View style={[s.col, s.textCenter]}>
           <Text style={[styles.textCloudy]}>{data.message}</Text>
         </View>
       </View>
@@ -128,7 +129,7 @@ export default function App() {
     );
   };
   // test componet
-  const [modalVisible, setModalVisible] = useState(false);
+  // const [modalVisible, setModalVisible] = useState(false);
   const InputComp = () => {
     // alert("modal")
     return (
@@ -138,6 +139,17 @@ export default function App() {
     );
   };
 
+  // handle city edit
+  const handleCityText = (value) => {
+    setQ(value);
+  };
+  // change city
+  const changeCity = () => {
+    setData();
+    setIsEdit(false);
+    CALL_API();
+  };
+
   // call api
   const CALL_API = () => {
     fetch(API_URI)
@@ -145,6 +157,7 @@ export default function App() {
       .then((data) => {
         console.log("res data ", data);
         setData(data);
+        isEdit(false);
         // setIcon()
       })
       .catch((error) => console.error(error));
@@ -177,19 +190,56 @@ export default function App() {
                   ]}
                 >
                   {/*  */}
-                  <View style={[s.row]}>
-                    <View style={[s.col, { justifyContent: "flex-start" }]}>
-                      <TouchableOpacity
-                        onPress={() => {
-                          alert("Berhampore, Murshidabad, Westbengal");
-                        }}
+                  {isEdit ? (
+                    <View style={[s.row, s.mAuto]}>
+                      <View style={[s.col11, { justifyContent: "flex-start" }]}>
+                        <TextInput
+                          style={styles.input}
+                          underlineColorAndroid="transparent"
+                          placeholder="Place.."
+                          placeholderTextColor="#9a73ef"
+                          value={q}
+                          onChangeText={(e) => handleCityText(e)}
+                          autoFocus={true}
+                          onFocus={(e) => {
+                            e.select();
+                          }}
+                        />
+                      </View>
+                      <View
+                        style={[
+                          s.col1,
+                          s.mAuto,
+                          { alignItems: "center", justifyContent: "center" },
+                        ]}
                       >
-                        <Text style={[styles.text, { textAlign: "center" }]}>
-                          {data.name}, {data.sys.country}
-                        </Text>
-                      </TouchableOpacity>
+                        <TouchableOpacity
+                          onPress={() => {
+                            changeCity();
+                          }}
+                        >
+                          <Icon
+                            name="search"
+                            style={{ fontSize: "22px", color: "#fff" }}
+                          />
+                        </TouchableOpacity>
+                      </View>
                     </View>
-                  </View>
+                  ) : (
+                    <View style={[s.row]}>
+                      <View style={[s.col, { justifyContent: "flex-start" }]}>
+                        <TouchableOpacity
+                          onPress={() => {
+                            setIsEdit(true);
+                          }}
+                        >
+                          <Text style={[styles.text, { textAlign: "center" }]}>
+                            {data.name}, {data.sys.country}
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  )}
                   {/*  */}
                   <View style={[s.row, s.mt3]}>
                     <View style={[s.col2]}>
@@ -393,21 +443,56 @@ export default function App() {
           {/*  */}
           <View style={[s.row, s.mt3]}>
             <View style={[s.col, s.textCenter]}>
-              <TouchableOpacity onPress={()=>{Refresh()}}>
-                <Icon name="refresh" style={{fontSize: "30px", color: "#311B92"}} />
+              <TouchableOpacity
+                onPress={() => {
+                  Refresh();
+                }}
+              >
+                <Icon
+                  name="refresh"
+                  style={{ fontSize: "30px", color: "#311B92" }}
+                />
               </TouchableOpacity>
-              {/* <Button
-                onPress={()=>{Refresh()}}
-                title="Learn More"
-                color="#841584"
-              /> */}
             </View>
           </View>
         </>
       ) : (
         <>
+        <View style={[s.card, s.cardBody, styles.bg]}>
+          <View style={[s.row, s.mAuto]}>
+            <View style={[s.col11, { justifyContent: "flex-start" }]}>
+              <TextInput
+                style={styles.input}
+                underlineColorAndroid="transparent"
+                placeholder="Place.."
+                placeholderTextColor="#9a73ef"
+                value={q}
+                onChangeText={(e) => handleCityText(e)}
+                autoFocus={true}
+              />
+            </View>
+            <View
+              style={[
+                s.col1,
+                s.mAuto,
+                { alignItems: "center", justifyContent: "center" },
+              ]}
+            >
+              <TouchableOpacity
+                onPress={() => {
+                  changeCity();
+                }}
+              >
+                <Icon
+                  name="search"
+                  style={{ fontSize: "22px", color: "#fff" }}
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
           {NoDataFound()}
           {/* {InputComp()} */}
+          </View>
         </>
       )}
     </View>
@@ -512,5 +597,14 @@ const styles = StyleSheet.create({
   modalText: {
     marginBottom: 15,
     textAlign: "center",
+  },
+  input: {
+    margin: 15,
+    height: 40,
+    borderColor: "#7a42f4",
+    borderWidth: 1,
+    color: "#fff",
+    paddingHorizontal: "10px",
+    fontSize: "20px",
   },
 });
